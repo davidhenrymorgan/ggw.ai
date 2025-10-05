@@ -6,6 +6,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 This is a Next.js 15 SaaS starter kit with Clerk authentication, Clerk Billing for payments, and Convex as the real-time database backend. The stack combines modern frontend technologies with a serverless backend architecture.
 
+**Custom Domain:** girlsgonewild.ai (configured in Cloudflare, not yet attached to deployment)
+
 **Tech Stack:**
 - Next.js 15 with App Router and Turbopack
 - Clerk for authentication and billing/payments
