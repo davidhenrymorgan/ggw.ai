@@ -1,71 +1,95 @@
+"use client";
+
 import React from 'react'
 import Link from 'next/link'
 import { Button } from '@/components/ui/button'
 import Image from 'next/image'
-import { HeroHeader } from "./header"
-import { Sparkle } from 'lucide-react'
+import { motion } from 'framer-motion'
 
 export default function HeroSection() {
     return (
-        <>
-            <HeroHeader />
-            <main>
-                <section className="">
-                    <div className="py-20 md:py-36">
-                        <div className="relative z-10 mx-auto max-w-5xl px-6 text-center">
-                            <div>
-                                <Link
-                                    href="#"
-                                    className="hover:bg-foreground/5 mx-auto flex w-fit items-center justify-center gap-2 rounded-md py-0.5 pl-1 pr-3 transition-colors duration-150">
-                                    <div
-                                        aria-hidden
-                                        className="border-background bg-linear-to-b dark:inset-shadow-2xs to-foreground from-primary relative flex size-5 items-center justify-center rounded border shadow-md shadow-black/20 ring-1 ring-black/10">
-                                        <div className="absolute inset-x-0 inset-y-1.5 border-y border-dotted border-white/25"></div>
-                                        <div className="absolute inset-x-1.5 inset-y-0 border-x border-dotted border-white/25"></div>
-                                        <Sparkle className="size-3 fill-background stroke-background drop-shadow" />
-                                    </div>
-                                    <span className="font-medium">Introducing AI Agents</span>
-                                </Link>
-                                <h1 className="mx-auto mt-8 max-w-3xl text-balance text-4xl font-bold tracking-tight sm:text-5xl">Build 10x Faster with Starter</h1>
-                                <p className="text-muted-foreground mx-auto my-6 max-w-xl text-balance text-xl">Craft. Build. Ship Modern Websites With AI Support.</p>
+        <div className="relative min-h-screen overflow-hidden">
+            {/* Floating Navigation */}
+            <nav className="absolute top-0 right-0 z-50 p-6 md:p-8">
+                <div className="flex items-center gap-6 text-sm font-medium text-white/80">
+                    <Link href="/explore" className="hover:text-white transition-colors">
+                        Explore
+                    </Link>
+                    <Link href="/dashboard" className="hover:text-white transition-colors">
+                        Dashboard
+                    </Link>
+                    <Link href="#pricing" className="hover:text-white transition-colors">
+                        Pricing
+                    </Link>
+                    <Link href="/sign-in">
+                        <Button size="sm" variant="outline" className="bg-white/10 border-white/20 text-white hover:bg-white/20">
+                            Sign In
+                        </Button>
+                    </Link>
+                </div>
+            </nav>
 
-                                <div className="flex items-center justify-center gap-3">
-                                    <Button
-                                        asChild
-                                        size="lg">
-                                        <Link href="#link">
-                                            <span className="text-nowrap">Start Building</span>
-                                        </Link>
-                                    </Button>
-                                    <Button
-                                        asChild
-                                        size="lg"
-                                        variant="outline">
-                                        <Link href="#link">
-                                            <span className="text-nowrap">Watch Video</span>
-                                        </Link>
-                                    </Button>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="relative">
-                            <div className="relative z-10 mx-auto max-w-5xl px-6">
-                                <div className="mt-12 md:mt-16">
-                                    <div className="bg-background rounded-(--radius) relative mx-auto overflow-hidden border border-transparent shadow-lg shadow-black/10 ring-1 ring-black/10">
-                                        <Image
-                                            src="/hero-section-main-app-dark.png"
-                                            alt="app screen"
-                                            width={2880}
-                                            height={1842}
-                                            priority
-                                        />
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-            </main>
-        </>
+            {/* Hero Background - Gradient */}
+            <div className="absolute inset-0 bg-gradient-hero" />
+
+            {/* Background Image/Video Placeholder */}
+            <div className="absolute inset-0 opacity-30">
+                <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-transparent" />
+                {/* Placeholder for future video/image */}
+                <div className="w-full h-full bg-[radial-gradient(circle_at_center,_oklch(0.15_0.1_264)_0%,_transparent_70%)]" />
+            </div>
+
+            {/* Hero Content */}
+            <div className="relative z-10 flex min-h-screen items-center justify-center px-6">
+                <div className="mx-auto max-w-4xl text-center">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                    >
+                        {/* Title */}
+                        <h1 className="text-hero mb-6 text-white">
+                            <span className="text-dream block">Dream</span>
+                            <span className="text-machine block mt-2">Generator</span>
+                        </h1>
+
+                        {/* Description */}
+                        <motion.p
+                            className="mx-auto mb-8 max-w-2xl text-lg text-white/70 md:text-xl"
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.2 }}
+                        >
+                            Create stunning AI-generated images and videos from your imagination.
+                            Advanced models, instant results, limitless creativity.
+                        </motion.p>
+
+                        {/* CTA Button */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.8, delay: 0.4 }}
+                        >
+                            <Link href="/dashboard/generate">
+                                <Button
+                                    size="lg"
+                                    className="rounded-full bg-white px-8 py-6 text-base font-semibold text-black hover:bg-white/90"
+                                >
+                                    Try Now in Dream Generator
+                                </Button>
+                            </Link>
+                        </motion.div>
+                    </motion.div>
+                </div>
+            </div>
+
+            {/* Bottom Brand Bar */}
+            <div className="absolute bottom-0 left-0 right-0 z-20 flex items-center justify-between border-t border-white/10 bg-black/40 px-6 py-4 backdrop-blur-sm">
+                <div className="flex items-center gap-2">
+                    <div className="text-lg font-semibold text-white">GGW.ai</div>
+                </div>
+                <div className="text-sm text-white/60">Powered by Next.js + Convex</div>
+            </div>
+        </div>
     )
 }

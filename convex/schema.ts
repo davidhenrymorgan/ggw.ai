@@ -91,4 +91,31 @@ export default defineSchema({
       .index("by_collection", ["collectionId", "addedAt"])
       .index("by_asset", ["assetId"])
       .index("by_user", ["userId"]),
+
+    boards: defineTable({
+      userId: v.id("users"),
+      name: v.string(),
+      category: v.optional(v.string()),
+      description: v.optional(v.string()),
+      coverImage: v.optional(v.string()),
+      isPublic: v.boolean(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+      .index("by_user", ["userId", "createdAt"])
+      .index("by_visibility", ["isPublic", "createdAt"]),
+
+    boardPrompts: defineTable({
+      boardId: v.id("boards"),
+      userId: v.id("users"),
+      prompt: v.string(),
+      title: v.string(),
+      description: v.optional(v.string()),
+      assetIds: v.array(v.id("assets")),
+      status: v.union(v.literal("pending"), v.literal("processing"), v.literal("completed"), v.literal("failed")),
+      createdAt: v.number(),
+    })
+      .index("by_board", ["boardId", "createdAt"])
+      .index("by_user", ["userId", "createdAt"])
+      .index("by_status", ["status"]),
   });

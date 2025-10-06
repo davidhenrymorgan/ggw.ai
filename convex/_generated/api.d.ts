@@ -13,7 +13,11 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as assets from "../assets.js";
+import type * as generations from "../generations.js";
 import type * as http from "../http.js";
+import type * as lib_promptchan from "../lib/promptchan.js";
+import type * as lib_r2 from "../lib/r2.js";
 import type * as paymentAttemptTypes from "../paymentAttemptTypes.js";
 import type * as paymentAttempts from "../paymentAttempts.js";
 import type * as users from "../users.js";
@@ -27,7 +31,11 @@ import type * as users from "../users.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  assets: typeof assets;
+  generations: typeof generations;
   http: typeof http;
+  "lib/promptchan": typeof lib_promptchan;
+  "lib/r2": typeof lib_r2;
   paymentAttemptTypes: typeof paymentAttemptTypes;
   paymentAttempts: typeof paymentAttempts;
   users: typeof users;

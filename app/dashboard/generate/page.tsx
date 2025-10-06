@@ -89,39 +89,52 @@ export default function GeneratePage() {
   const config = getModeConfig();
 
   return (
-    <div className="mx-auto max-w-4xl space-y-8 p-6">
-      <div>
-        <h1 className="text-3xl font-bold">{config.title}</h1>
-        <p className="text-muted-foreground">{config.description}</p>
+    <div className="mx-auto max-w-5xl space-y-10">
+      {/* Header with luminous glow */}
+      <div className="space-y-3">
+        <h1 className="text-4xl font-bold tracking-tight">{config.title}</h1>
+        <p className="text-lg text-muted-foreground">{config.description}</p>
       </div>
 
-      {/* Mode Tabs */}
+      {/* Mode Tabs with glow effects */}
       <Tabs value={mode} onValueChange={(v) => setMode(v as GenerationMode)} className="w-full">
-        <TabsList className="grid w-full grid-cols-4">
-          <TabsTrigger value="text-to-image" className="gap-2">
+        <TabsList className="glass-hover grid w-full grid-cols-4 gap-2 p-2 h-auto">
+          <TabsTrigger
+            value="text-to-image"
+            className="gap-2 rounded-xl py-3 data-[state=active]:bg-gradient-card-purple data-[state=active]:text-white data-[state=active]:shadow-glow-purple transition-all"
+          >
             <ImageIcon className="h-4 w-4" />
             <span className="hidden sm:inline">Text to Image</span>
             <span className="sm:hidden">Image</span>
           </TabsTrigger>
-          <TabsTrigger value="text-to-video" className="gap-2">
+          <TabsTrigger
+            value="text-to-video"
+            className="gap-2 rounded-xl py-3 data-[state=active]:bg-gradient-card-cyan data-[state=active]:text-white data-[state=active]:shadow-glow-cyan transition-all"
+          >
             <Video className="h-4 w-4" />
             <span className="hidden sm:inline">Text to Video</span>
             <span className="sm:hidden">Video</span>
           </TabsTrigger>
-          <TabsTrigger value="image-to-image" className="gap-2">
+          <TabsTrigger
+            value="image-to-image"
+            className="gap-2 rounded-xl py-3 data-[state=active]:bg-gradient-card-gold data-[state=active]:text-white transition-all"
+          >
             <Wand2 className="h-4 w-4" />
             <span className="hidden sm:inline">Image to Image</span>
             <span className="sm:hidden">I2I</span>
           </TabsTrigger>
-          <TabsTrigger value="image-edit" className="gap-2">
+          <TabsTrigger
+            value="image-edit"
+            className="gap-2 rounded-xl py-3 data-[state=active]:bg-gradient-card-magenta data-[state=active]:text-white transition-all"
+          >
             <Pencil className="h-4 w-4" />
             <span className="hidden sm:inline">Edit Image</span>
             <span className="sm:hidden">Edit</span>
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value={mode} className="mt-6">
-          <div className="space-y-6 rounded-lg border bg-card p-6">
+        <TabsContent value={mode} className="mt-8">
+          <div className="glass-hover space-y-8 rounded-3xl p-8 shadow-card">
             {/* Image Upload (for image-to-image and image-edit modes) */}
             {(mode === "image-to-image" || mode === "image-edit") && (
               <div className="space-y-2">
@@ -137,8 +150,8 @@ export default function GeneratePage() {
             )}
 
             {/* Prompt */}
-            <div className="space-y-2">
-              <Label htmlFor="prompt">
+            <div className="space-y-3">
+              <Label htmlFor="prompt" className="text-base font-medium">
                 {mode === "image-edit" ? "Edit Instructions" : "Prompt"}
               </Label>
               <Textarea
@@ -150,8 +163,8 @@ export default function GeneratePage() {
                 }
                 value={prompt}
                 onChange={(e) => setPrompt(e.target.value)}
-                rows={4}
-                className="resize-none"
+                rows={5}
+                className="resize-none rounded-2xl text-base"
               />
               <p className="text-xs text-muted-foreground">
                 {prompt.length} / 500 characters
@@ -203,9 +216,12 @@ export default function GeneratePage() {
         </div>
 
             {/* Generate Button */}
-            <div className="flex items-center justify-between pt-4">
-              <div className="text-sm text-muted-foreground">
-                Cost: <span className="font-semibold">{config.creditCost} credits</span>
+            <div className="flex items-center justify-between border-t border-border/50 pt-6">
+              <div className="flex items-center gap-2 text-base">
+                <span className="text-muted-foreground">Cost:</span>
+                <span className="rounded-full bg-gradient-card-purple px-4 py-1.5 font-semibold text-white">
+                  {config.creditCost} credits
+                </span>
               </div>
               <Button
                 onClick={handleGenerate}
@@ -215,6 +231,7 @@ export default function GeneratePage() {
                   ((mode === "image-to-image" || mode === "image-edit") && !uploadedImage)
                 }
                 size="lg"
+                className="rounded-full bg-gradient-card-purple px-8 py-6 text-base font-semibold shadow-glow-purple hover:shadow-glow-lg disabled:opacity-50"
               >
                 {isGenerating ? "Generating..." : `Generate ${mode === "text-to-video" ? "Video" : "Image"}`}
               </Button>

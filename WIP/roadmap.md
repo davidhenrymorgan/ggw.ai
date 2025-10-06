@@ -1,73 +1,457 @@
-Awesome—here’s a short, high-signal bullet outline that folds in your clarifications (Firecrawl premium, Leonardo UI reference, Sora inspiration, Clerk wrapping rules, and whether to use Vercel AI SDK v5). Skim this, tweak anything, and I’ll expand it into a full ROADMAP.md.
+# ROADMAP.md
 
-⸻
+Product Roadmap for girlsgonewild.ai
+Last Updated: 2025-10-06
 
-🎯 Product & Design North Star
-	•	UI/UX: Hybrid of Leonardo’s app shell (structure/flows) + Sora’s visual minimalism (dark canvas, glass cards, big rhythm).
-	•	Scope: Public-by-default gallery (images/videos), likes, saves → collections/folders; generation pages for image & video.
-	•	Ethics: Recreate structure & patterns; rewrite copy; no verbatim scraping of protected content.
+---
 
-🔎 Firecrawl (Premium) — “Study Only”
-	•	Use Map → Diff → Scrape (html-only, depth=2) on app.leonardo.ai to learn routes, layout regions, component blocks (no content reuse).
-	•	Export a SITE_STRUCTURE.md (routes + components) to guide build; keep screenshots/HTML in WIP only.
+## 🎯 Product Vision
 
-👤 Clerk Integration (critical constraints)
-	•	Follow Clerk’s Next.js App Router wrapping: ClerkProvider in app/layout.tsx, route guarding via middleware.ts.
-	•	When embedding shadcn/ui pages/blocks:
-	•	Logged-in: render authenticated views/components (SSR-safe).
-	•	Logged-out: show gated/marketing variants (avoid leaking private data).
-	•	Use Convex + Clerk JWT template for server checks on mutations/queries (no client-only auth checks).
+**UI/UX Inspiration:**
+- Leonardo.ai app structure (routes, flows, component blocks)
+- Sora visual aesthetic (dark canvas, glass cards, minimal, big rhythm)
 
-🧱 Convex Data Model (core tables)
-	•	users (Clerk bridge; handle, avatar)
-	•	assets (image|video, visibility, status, r2Key, meta, likeCount, createdAt)
-	•	generations (userId, type, input, engine, status, assetId, creditsUsed, timestamps)
-	•	likes (userId+assetId unique)
-	•	collections, collectionItems (optional parentId for folders)
-	•	Indexes for feed & profile: by_visibility, by_createdAt, by_owner, by_user, by_asset.
+**Core Features:**
+- Public gallery with images/videos (likes, saves, collections)
+- Multi-mode AI generation (text-to-image, text-to-video, image-to-image, image editing)
+- Credit-based billing system via Clerk
+- Cloudflare R2 storage with CDN delivery
 
-🧰 Generation Providers (Promptchan first; pluggable)
-	•	Add a provider interface; start with Promptchan endpoints:
-	•	Image: POST /api/external/create (cost by quality/options).
-	•	Video: POST /api/external/video_v2/submit → GET …/status(_with_logs) → GET …/result.  ￼
-	•	Keep adapters for future engines (Flux/OpenAI/Sora when available); select via GEN_PROVIDER env.
+---
 
-🗂️ Storage (Cloudflare R2)
-	•	Bucket layout: assets/{userId}/{assetId}/[original|thumb|poster].(jpg|mp4).
-	•	Public CDN for public assets; signed URLs for private/unlisted.
-	•	Generate poster/thumbnail on finalize; store on assets.
+## 🚦 Current Status: Authentication Fix Required
 
-💳 Credits & Billing
-	•	credits, creditTransactions tables; deduct on enqueue, refund on fail.
-	•	Clerk Billing → Convex webhook maps plan → monthly credit allotment; support one-time top-ups.
+**Immediate Blocker:**
+- Missing `NEXT_PUBLIC_CLERK_FRONTEND_API_URL` in Convex environment variables
+- User upgrading Convex to paid tier ($25/month)
+- Once fixed, can test end-to-end generation flow
 
-🖼️ Frontend (Sora/Leonardo style)
-	•	Explore: masonry grid (CSS columns, break-inside-avoid), filters (All/Images/Videos), sort (New/Trending).
-	•	Asset Detail: modal/page with viewer, prompt/settings, like/save/share.
-	•	Generate: tabs for Image/Video (quality, aspect, seed, negative prompt, presets).
-	•	Profile: tabs (Gallery, Collections, Likes); owner tools to toggle visibility.
-	•	Polished A11y (AA contrast, focus rings, PRM), subtle motion.
+---
 
-🧩 Vercel AI SDK v5 — use or skip?
-	•	Use it if you want streaming UI, tool calls, server actions ergonomics (especially for chatty/agent features).
-	•	OK to skip for the core Promptchan workflow (it’s HTTP + polling). Consider SDK v5 later for assistants/UX (prompt helpers, captioners, etc.).
+## 📋 Next Up (This Week)
 
-🛡️ Moderation & Safety (minimum)
-	•	assets.moderation.status gates public listing; simple reports table + admin queue.
-	•	Rate-limit generation endpoints; log provider errors; do not store secrets client-side.
+### 1. Fix Authentication & Test Generation Flow
+**Time Estimate:** 1-2 hours
+**Files:** Convex environment variables
+**Dependencies:** Convex upgrade complete
 
-🗓️ Build Order (phases)
-	1.	UI Shell + Explore (Sora/Leonardo look) → AssetCard, GalleryGrid, detail modal.
-	2.	Convex schema + Likes/Collections (optimistic updates + denorm likeCount).
-	3.	Generation Core (Promptchan adapter, enqueue/finish/fail, credits).  ￼
-	4.	R2 finalize (upload, poster/thumb, public URLs).
-	5.	Generate pages (image/video forms + progress).
-	6.	Profiles & Collections pages.
-	7.	Polish/branding + landing refresh.
+**Steps:**
+1. Run: `npx convex env set NEXT_PUBLIC_CLERK_FRONTEND_API_URL https://natural-gazelle-72.clerk.accounts.dev`
+2. Verify auth works in dashboard
+3. Test image generation end-to-end:
+   - Create generation from `/dashboard/generate`
+   - Verify Promptchan API call succeeds
+   - Verify R2 upload completes
+   - Verify asset appears in Convex
+   - Verify asset shows in `/explore` feed
+4. Test different quality levels and credit costs
+5. Test image upload modes (image-to-image, edit)
 
-🧪 Acceptance checks (each phase)
-	•	Page renders SSR, passes auth guards, and no secret leakage.
-	•	Queries use withIndex; feeds paginate by cursor (createdAt + id).
-	•	Generation deducts/credits correctly, resumes on retry; asset appears in Explore on status="ready".
+### 2. Add Navigation Links
+**Time Estimate:** 30 minutes
+**Files to Modify:**
+- `app/dashboard/layout.tsx` or create sidebar component
+- Add links to `/explore` and `/dashboard/generate`
 
-⸻
+**Implementation:**
+- Create `<DashboardNav>` component with links
+- Highlight active route
+- Mobile-responsive navigation
+- Match Sora/Leonardo aesthetic
+
+### 3. Build Generation History Page
+**Time Estimate:** 2-3 hours
+**Exact Route:** `app/dashboard/history/page.tsx`
+**Exact Convex Function:** `queries.getUserGenerations` in `convex/generations.ts`
+**Exact Components:**
+- `components/ui/generation-card.tsx` - Shows generation with status
+- `components/ui/generation-status-badge.tsx` - Status indicator
+
+**Implementation:**
+```typescript
+// convex/generations.ts
+export const getUserGenerations = query({
+  args: {
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.string()),
+  },
+  returns: v.object({
+    generations: v.array(v.object({...})),
+    cursor: v.optional(v.string()),
+  }),
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const generations = await ctx.db
+      .query("generations")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .order("desc")
+      .take(args.limit || 20);
+    return { generations, cursor: null };
+  },
+});
+```
+
+**UI Features:**
+- Grid of generation cards
+- Status badges (pending, processing, ready, failed)
+- Filter by status and type
+- Pagination with cursor-based loading
+- Click card to view full asset
+- Retry failed generations
+
+### 4. Add Real-Time Generation Status
+**Time Estimate:** 2 hours
+**Exact Package:** Already using Convex React subscriptions
+**Files to Modify:**
+- `app/dashboard/generate/page.tsx` - Subscribe to generation status
+- `components/ui/generation-progress.tsx` - New component
+
+**Implementation:**
+```typescript
+// In generate page
+const generation = useQuery(api.generations.getGenerationById, { 
+  generationId: currentGenerationId 
+});
+
+// Show progress based on status
+{generation?.status === "pending" && <GenerationProgress status="pending" />}
+{generation?.status === "processing" && <GenerationProgress status="processing" />}
+{generation?.status === "ready" && <GenerationResult assetId={generation.assetId} />}
+{generation?.status === "failed" && <GenerationError error={generation.error} />}
+```
+
+### 5. Test Video Generation Flow
+**Time Estimate:** 3-4 hours
+**Dependencies:** Image generation working
+**Exact API Endpoint:** `POST /api/external/video_v2/submit`
+**Exact Convex Functions:**
+- `mutations.createVideoGeneration` in `convex/generations.ts`
+- `actions.submitVideoJob` in `convex/generations.ts`
+- `actions.pollVideoStatus` (scheduled function)
+- `actions.processVideoResult` in `convex/generations.ts`
+
+**Implementation:**
+1. Create scheduled function to poll pending videos:
+```typescript
+// convex/crons.ts
+export default {
+  pollVideoGenerations: {
+    schedule: "*/2 * * * *", // Every 2 minutes
+    handler: async (ctx) => {
+      const pending = await ctx.db
+        .query("generations")
+        .withIndex("by_status", (q) => 
+          q.eq("status", "processing").eq("type", "video")
+        )
+        .collect();
+      
+      for (const gen of pending) {
+        await ctx.scheduler.runAfter(0, api.generations.pollVideoStatus, {
+          generationId: gen._id,
+        });
+      }
+    },
+  },
+};
+```
+
+2. Test full video flow:
+   - Submit video generation
+   - Verify polling updates status
+   - Verify video downloads from Promptchan
+   - Verify video uploads to R2
+   - Verify thumbnail generation
+   - Verify asset creation
+
+---
+
+## 📅 This Month
+
+### Week 2: Polish & Production Setup
+**Estimated Time:** 10-15 hours
+
+**1. Attach Custom Domain (girlsgonewild.ai)**
+- Configure in Vercel dashboard
+- Update DNS settings if needed
+- Set up SSL certificate
+- Test deployment on custom domain
+
+**2. Set Up Vercel Environment Variables**
+- Copy all env vars from `.env.local`
+- Configure production Convex deployment
+- Update webhook URLs to production endpoints
+- Test auth flow in production
+
+**3. Add Like & Save Features**
+**Exact Convex Functions:**
+- `mutations.toggleLike` in `convex/likes.ts`
+- `queries.getUserLikes` in `convex/likes.ts`
+- `mutations.addToCollection` in `convex/collections.ts`
+
+**Implementation:**
+```typescript
+// convex/likes.ts
+export const toggleLike = mutation({
+  args: { assetId: v.id("assets") },
+  returns: v.boolean(),
+  handler: async (ctx, args) => {
+    const user = await getCurrentUserOrThrow(ctx);
+    const existing = await ctx.db
+      .query("likes")
+      .withIndex("by_user_and_asset", (q) =>
+        q.eq("userId", user._id).eq("assetId", args.assetId)
+      )
+      .first();
+    
+    if (existing) {
+      await ctx.db.delete(existing._id);
+      await ctx.db.patch(args.assetId, {
+        likeCount: (await ctx.db.get(args.assetId))!.likeCount - 1,
+      });
+      return false;
+    } else {
+      await ctx.db.insert("likes", {
+        userId: user._id,
+        assetId: args.assetId,
+        createdAt: Date.now(),
+      });
+      await ctx.db.patch(args.assetId, {
+        likeCount: (await ctx.db.get(args.assetId))!.likeCount + 1,
+      });
+      return true;
+    }
+  },
+});
+```
+
+**4. Implement Collections/Folders**
+**Exact Route:** `app/dashboard/collections/page.tsx`
+**Exact Convex Functions:**
+- `queries.getUserCollections` in `convex/collections.ts`
+- `mutations.createCollection` in `convex/collections.ts`
+- `mutations.addToCollection` in `convex/collections.ts`
+
+**5. Add Asset Detail Modal**
+**Component:** `components/ui/asset-detail-modal.tsx`
+**Features:**
+- Full-size image/video viewer
+- Download button
+- Like/save actions
+- Prompt and settings display
+- Share link
+- Delete option (if owner)
+
+### Week 3: Credit System
+**Estimated Time:** 8-12 hours
+
+**1. Add Credits Schema**
+**Exact File:** `convex/schema.ts`
+**Exact Tables:**
+```typescript
+credits: defineTable({
+  userId: v.id("users"),
+  balance: v.number(),
+  monthlyAllotment: v.number(),
+  subscriptionTier: v.union(
+    v.literal("free"),
+    v.literal("starter"),
+    v.literal("pro"),
+    v.literal("ultimate")
+  ),
+  lastReset: v.number(),
+  createdAt: v.number(),
+  updatedAt: v.number(),
+}).index("by_user", ["userId"]),
+
+creditTransactions: defineTable({
+  userId: v.id("users"),
+  amount: v.number(), // positive = add, negative = deduct
+  type: v.union(
+    v.literal("generation"),
+    v.literal("purchase"),
+    v.literal("monthly_reset"),
+    v.literal("refund")
+  ),
+  relatedId: v.optional(v.id("generations")), // Link to generation
+  description: v.string(),
+  balanceAfter: v.number(),
+  createdAt: v.number(),
+})
+  .index("by_user", ["userId", "createdAt"])
+  .index("by_type", ["type", "createdAt"]),
+```
+
+**2. Implement Credit Operations**
+**Exact File:** `convex/credits.ts`
+**Exact Functions:**
+- `queries.getCreditBalance` - Get current balance
+- `queries.getCreditHistory` - Get transaction history (paginated)
+- `mutations.deductCredits` - Deduct for generation
+- `mutations.addCredits` - Add from purchase
+- `mutations.resetMonthlyCredits` - Scheduled monthly reset
+- `internalMutations.initializeUserCredits` - Called from user webhook
+
+**3. Update Generation Flow to Use Credits**
+**Files to Modify:**
+- `convex/generations.ts` - Add credit check and deduction
+- `app/dashboard/generate/page.tsx` - Show credit balance and cost
+
+**4. Add Credit Display Components**
+**Exact Components:**
+- `components/ui/credit-balance.tsx` - Show in navbar
+- `components/ui/credit-history.tsx` - Transaction list
+- `components/ui/credit-cost-badge.tsx` - Show cost on generation form
+
+**5. Clerk Billing → Credits Sync**
+**File to Modify:** `convex/http.ts`
+**Handle Events:**
+- `subscription.created` - Initialize credits
+- `subscription.updated` - Update tier and allotment
+- `paymentAttempt.updated` - Add one-time credits
+
+**Credit Tiers:**
+- Free: 10 credits (test only)
+- Starter ($29/mo): 500 credits
+- Pro ($79/mo): 2000 credits
+- Ultimate ($199/mo): 6000 credits
+
+### Week 4: Analytics & Monitoring
+**Estimated Time:** 6-8 hours
+
+**1. Add Error Tracking**
+**Package:** `@sentry/nextjs@^9.0.0`
+**Setup:**
+- Install Sentry SDK
+- Configure `sentry.client.config.ts`
+- Configure `sentry.server.config.ts`
+- Add to `next.config.js`
+- Test error reporting
+
+**2. Add Analytics**
+**Package:** `@vercel/analytics@^2.0.0`
+**Track:**
+- Page views
+- Generation events
+- Credit purchases
+- User engagement
+
+**3. Create Admin Dashboard**
+**Exact Route:** `app/admin/page.tsx`
+**Protected By:** Admin role check in Clerk
+**Show:**
+- Total users, generations, credits used
+- Daily/weekly/monthly trends
+- Failed generations rate
+- Top users by generations
+
+---
+
+## 🔮 Future (Backlog)
+
+### Advanced Generation Features
+- **Image-to-Image Generation**: Upload reference image and transform
+- **Batch Generation**: Generate multiple variations
+- **ControlNet Integration**: Pose control, depth maps
+- **Character Consistency**: LoRA training for custom characters
+- **Scheduled Generations**: Queue generations for later
+
+### Social Features
+- **User Profiles**: Public gallery, bio, social links
+- **Following System**: Follow creators, see their content
+- **Comments**: Allow feedback on public assets
+- **Trending Algorithm**: Surface popular content
+- **Featured Collections**: Curated galleries
+
+### Business Features
+- **API Access**: Programmatic generation for Pro+ users
+- **Webhooks**: Generation completion notifications
+- **Team Accounts**: Shared credits and collections
+- **Custom Model Training**: Upload datasets, train custom models
+- **White-Label**: Custom branding for enterprise
+
+### Mobile
+- **Progressive Web App**: Install on mobile
+- **React Native App**: Native iOS/Android
+- **Mobile-Optimized UI**: Touch-friendly generation forms
+- **Push Notifications**: Generation complete alerts
+
+---
+
+## 🎯 Success Metrics
+
+### Phase 1 (Current Month)
+- ✅ Authentication working
+- ✅ Image generation < 10s average
+- ✅ Video generation < 5min average
+- ✅ 95%+ generation success rate
+- ✅ Zero credit sync errors
+
+### Phase 2 (Month 2)
+- 100+ signed-up users
+- 50+ paid subscribers
+- 5%+ conversion rate
+- < 5% monthly churn
+- 1000+ generations/day
+
+### Phase 3 (Month 3+)
+- 20%+ MRR growth month-over-month
+- NPS score > 40
+- < 3% failed generation rate
+- 10min+ average session length
+- 50%+ repeat generation rate
+
+---
+
+## 🛡️ Technical Debt & Maintenance
+
+### Security & Compliance (Before Public Launch)
+- [ ] Content moderation system
+- [ ] DMCA takedown process
+- [ ] Age verification (18+ content)
+- [ ] 2257 compliance documentation
+- [ ] Rate limiting on API endpoints
+- [ ] DDoS protection via Cloudflare
+- [ ] Privacy policy (GDPR/CCPA compliant)
+- [ ] Terms of service
+- [ ] Cookie consent banner
+
+### Performance Optimization
+- [ ] Image optimization (WebP, AVIF formats)
+- [ ] CDN caching strategy
+- [ ] Database query optimization
+- [ ] R2 storage cost monitoring
+- [ ] Convex function performance monitoring
+
+### Testing & CI/CD
+- [ ] Unit tests for critical functions
+- [ ] Integration tests for generation flow
+- [ ] E2E tests with Playwright
+- [ ] Automated deployment on push to main
+- [ ] Preview deployments for PRs
+
+---
+
+## 💡 Notes
+
+**Ethics & Legal:**
+- Recreate structure & patterns from Leonardo.ai
+- Rewrite all copy - no verbatim content
+- No scraping of protected content
+- Follow Clerk's integration patterns exactly
+- Use Convex + Clerk JWT for auth checks (no client-only)
+
+**Tech Stack Locked In:**
+- Next.js 15 + App Router
+- Clerk (auth + billing)
+- Convex (database + serverless)
+- Cloudflare R2 (storage)
+- Promptchan (generation provider)
+- shadcn/ui + TailwindCSS v4
+- Vercel (hosting)
+
+**Development Workflow:**
+- Feature branches for all work
+- PRs to main with review
+- Conventional commits
+- Update WIP/status.md after each deploy
+- Keep roadmap concrete and actionable

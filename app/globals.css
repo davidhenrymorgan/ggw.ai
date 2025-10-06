@@ -153,6 +153,83 @@
   }
 }
 
+@layer utilities {
+  /* Sora-inspired gradients */
+  .bg-gradient-sora {
+    background: linear-gradient(135deg,
+      oklch(0.37 0.1 296) 0%,
+      oklch(0.35 0.15 264) 50%,
+      oklch(0.25 0.08 264) 100%
+    );
+  }
+
+  .bg-gradient-hero {
+    background: radial-gradient(circle at 50% 0%,
+      oklch(0.2 0.15 264) 0%,
+      oklch(0.08 0 0) 60%
+    );
+  }
+
+  .bg-gradient-card-purple {
+    background: linear-gradient(135deg,
+      oklch(0.6 0.2 280) 0%,
+      oklch(0.45 0.2 260) 100%
+    );
+  }
+
+  .bg-gradient-card-cyan {
+    background: linear-gradient(135deg,
+      oklch(0.7 0.15 220) 0%,
+      oklch(0.45 0.2 260) 100%
+    );
+  }
+
+  .bg-gradient-card-gold {
+    background: linear-gradient(135deg,
+      oklch(0.75 0.15 80) 0%,
+      oklch(0.65 0.2 50) 100%
+    );
+  }
+
+  .bg-gradient-card-magenta {
+    background: linear-gradient(135deg,
+      oklch(0.65 0.25 330) 0%,
+      oklch(0.55 0.2 300) 100%
+    );
+  }
+
+  /* Glass morphism effect */
+  .glass {
+    @apply bg-card/50 backdrop-blur-xl border border-border/50;
+  }
+
+  .glass-hover {
+    @apply glass hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300;
+  }
+
+  /* Luminous glow effects */
+  .glow-purple {
+    @apply shadow-glow-purple;
+  }
+
+  .glow-cyan {
+    @apply shadow-glow-cyan;
+  }
+
+  /* Cinematic text styles */
+  .text-hero {
+    @apply text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight;
+  }
+
+  .text-dream {
+    @apply font-serif italic;
+  }
+
+  .text-machine {
+    @apply font-sans uppercase tracking-wider;
+  }
+}
+
 .cpu-architecture {
   offset-anchor: 10px 0px;
   animation: animation-path;
