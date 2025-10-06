@@ -19,11 +19,7 @@ None yet - working on production deployment
 
 ## 🔧 Partially Working
 
-### UI Shell & Explore Page
-- **Branch:** feature/ui-shell-explore
-- **Status:** Started - 2025-10-05
-- **What works:** (building now)
-- **What doesn't:** (will update as we go)
+None - ready to start UI work
 
 ## ❌ Known Issues
 
@@ -31,10 +27,20 @@ None yet
 
 ## 📊 Latest Deployment
 
-- **Environment:** Development only
-- **URL:** localhost:3000
+- **Environment:** Production (Vercel)
+- **URL:** https://ggw-nyh9byo6f-davidhenrymorgans-projects.vercel.app
+- **Branch:** main
+- **Status:** ✅ READY
+- **Deployed:** 2025-10-05
 - **Convex:** Development deployment
 - **Domain:** girlsgonewild.ai (configured in Cloudflare, not yet attached)
+
+### Deployment History
+
+| Date | Branch | Status | URL | Notes |
+|------|--------|--------|-----|-------|
+| 2025-10-05 | main | ✅ READY | https://ggw-nyh9byo6f-davidhenrymorgans-projects.vercel.app | Merged feature/ui-shell-explore - setup complete |
+| 2025-10-05 | feature/ui-shell-explore | ✅ READY | https://ggw-l2t0bdyyl-davidhenrymorgans-projects.vercel.app | Initial feature branch deployment |
 
 ## Current Sprint: Foundation → Production
 
