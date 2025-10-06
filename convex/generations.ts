@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, action, query } from "./_generated/server";
 import { api } from "./_generated/api";
-import { initPromptchanClient, calculateImageCost } from "./lib/promptchan";
+import { initPromptchanClient, calculateImageCost, mapQualityToAPI } from "./lib/promptchan";
 import { initR2Storage, R2Storage } from "./lib/r2";
 import { getCurrentUserOrThrow } from "./users";
 
@@ -20,8 +20,11 @@ export const createImageGeneration = mutation({
   handler: async (ctx, args) => {
     const user = await getCurrentUserOrThrow(ctx);
 
+    // Map quality to API format
+    const apiQuality = mapQualityToAPI(args.quality || "standard");
+
     // Calculate credit cost
-    const creditsUsed = calculateImageCost(args.quality || "standard");
+    const creditsUsed = calculateImageCost(apiQuality);
 
     // TODO: Check user has enough credits
     // const balance = await ctx.db.query("credits").filter(q => q.eq(q.field("userId"), user._id)).first();
@@ -37,7 +40,7 @@ export const createImageGeneration = mutation({
       negativePrompt: args.negativePrompt,
       settings: {
         style: args.style,
-        quality: args.quality || "standard",
+        quality: apiQuality,
         seed: args.seed,
       },
       engine: "promptchan",
@@ -90,8 +93,8 @@ export const processImageGeneration = action({
         seed: generation.settings.seed,
       });
 
-      if (!result.success || !result.image_base64) {
-        throw new Error(result.error || "Image generation failed");
+      if (!result.image) {
+        throw new Error("Image generation failed - no image returned");
       }
 
       // Upload to R2
@@ -102,7 +105,7 @@ export const processImageGeneration = action({
         "original.jpg"
       );
 
-      const cdnUrl = await r2.uploadBase64(result.image_base64, key, "image/jpeg");
+      const cdnUrl = await r2.uploadBase64(result.image, key, "image/jpeg");
 
       // Create asset record
       const assetId = await ctx.runMutation(api.generations.createAsset, {
