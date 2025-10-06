@@ -1,56 +1,65 @@
 /**
  * Promptchan API Client
- * Docs: https://promptchan.ai/api
+ * Docs: https://promptchan.com/docs
+ * Base URL: https://prod.aicloudnetservices.com/
  */
 
 export interface ImageGenerationRequest {
   prompt: string;
   negative_prompt?: string;
-  style?: string; // "cinematic_xl", "anime_xl_plus", etc.
-  quality?: "standard" | "high" | "max";
-  pose?: string;
+  style?: string; // "Cinematic XL", "Anime XL+", etc.
+  quality?: "Ultra" | "Extreme" | "Max";
+  poses?: string;
   filter?: string;
   emotion?: string;
-  age?: number;
-  weight?: number;
-  body?: string;
+  age_slider?: number;
+  weight_slider?: number;
+  breast_slider?: number;
+  ass_slider?: number;
   seed?: number;
+  creativity?: number;
+  image_size?: "512x512" | "512x768" | "768x512";
+  restore_faces?: boolean;
+  detail?: number;
 }
 
 export interface ImageGenerationResponse {
-  success: boolean;
-  image_url?: string;
-  image_base64?: string;
-  error?: string;
-  gems_used?: number;
+  image: string; // base64 encoded
+  gems: number; // remaining gems
 }
 
 export interface VideoGenerationRequest {
   prompt: string;
-  quality?: "standard" | "high" | "max";
-  aspect_ratio?: "portrait" | "wide";
-  audio?: boolean;
-  age?: number;
+  video_quality?: "Standard" | "High" | "Max";
+  aspect?: "Portrait" | "Wide";
+  audioEnabled?: boolean;
+  age_slider?: number;
   seed?: number;
 }
 
 export interface VideoSubmitResponse {
-  success: boolean;
-  request_id?: string;
-  error?: string;
+  request_id: string;
 }
 
 export interface VideoStatusResponse {
-  status: "pending" | "processing" | "completed" | "failed";
-  progress?: number;
-  queue_position?: number;
-  video_url?: string;
-  error?: string;
+  status: string; // e.g., "Completed"
+  details?: string | null;
+}
+
+export interface VideoStatusWithLogsResponse {
+  progress: number; // 0-1 (e.g., 0.5 = 50%)
+}
+
+export interface VideoResultResponse {
+  status: string;
+  message: string;
+  video: string[]; // Array of URLs
+  gems: number;
 }
 
 export class PromptchanClient {
   private apiKey: string;
-  private baseUrl = "https://api.promptchan.ai";
+  private baseUrl = "https://prod.aicloudnetservices.com";
 
   constructor(apiKey: string) {
     this.apiKey = apiKey;
@@ -66,13 +75,14 @@ export class PromptchanClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
+        "x-api-key": this.apiKey,
       },
       body: JSON.stringify(request),
     });
 
     if (!response.ok) {
-      throw new Error(`Promptchan API error: ${response.statusText}`);
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(`Promptchan API error: ${error.error || response.statusText}`);
     }
 
     return response.json();
@@ -88,13 +98,14 @@ export class PromptchanClient {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: `Bearer ${this.apiKey}`,
+        "x-api-key": this.apiKey,
       },
       body: JSON.stringify(request),
     });
 
     if (!response.ok) {
-      throw new Error(`Promptchan API error: ${response.statusText}`);
+      const error = await response.json().catch(() => ({ error: response.statusText }));
+      throw new Error(`Promptchan API error: ${error.error || response.statusText}`);
     }
 
     return response.json();
@@ -108,7 +119,27 @@ export class PromptchanClient {
       `${this.baseUrl}/api/external/video_v2/status/${requestId}`,
       {
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          "x-api-key": this.apiKey,
+        },
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Promptchan API error: ${response.statusText}`);
+    }
+
+    return response.json();
+  }
+
+  /**
+   * Get video status with progress logs
+   */
+  async getVideoStatusWithLogs(requestId: string): Promise<VideoStatusWithLogsResponse> {
+    const response = await fetch(
+      `${this.baseUrl}/api/external/video_v2/status_with_logs/${requestId}`,
+      {
+        headers: {
+          "x-api-key": this.apiKey,
         },
       }
     );
@@ -123,12 +154,12 @@ export class PromptchanClient {
   /**
    * Get video result (download URL)
    */
-  async getVideoResult(requestId: string): Promise<string> {
+  async getVideoResult(requestId: string): Promise<VideoResultResponse> {
     const response = await fetch(
       `${this.baseUrl}/api/external/video_v2/result/${requestId}`,
       {
         headers: {
-          Authorization: `Bearer ${this.apiKey}`,
+          "x-api-key": this.apiKey,
         },
       }
     );
@@ -137,8 +168,7 @@ export class PromptchanClient {
       throw new Error(`Promptchan API error: ${response.statusText}`);
     }
 
-    const data = await response.json();
-    return data.video_url;
+    return response.json();
   }
 }
 
@@ -154,33 +184,65 @@ export function initPromptchanClient(): PromptchanClient {
 }
 
 /**
- * Calculate credit cost for image generation
+ * Calculate credit cost for image generation (in Gems)
+ * Base: 1 Gem
+ * Extreme: +1 Gem
+ * Max: +2 Gems
+ * restore_faces: +1 Gem
  */
-export function calculateImageCost(quality: string): number {
+export function calculateImageCost(quality: string, restoreFaces = false): number {
+  let cost = 1; // Base cost
+
   switch (quality) {
-    case "standard":
-      return 1;
-    case "high":
-      return 2;
-    case "max":
-      return 5;
-    default:
-      return 1;
+    case "Extreme":
+      cost += 1;
+      break;
+    case "Max":
+      cost += 2;
+      break;
   }
+
+  if (restoreFaces) {
+    cost += 1;
+  }
+
+  return cost;
 }
 
 /**
  * Calculate credit cost for video generation
+ * Standard: 100 credits
+ * High: 200 credits
+ * Max: 500 credits
  */
 export function calculateVideoCost(quality: string): number {
   switch (quality) {
-    case "standard":
-      return 100;
-    case "high":
+    case "High":
       return 200;
-    case "max":
+    case "Max":
       return 500;
     default:
-      return 100;
+      return 100; // Standard
   }
+}
+
+/**
+ * Map UI quality to API quality
+ */
+export function mapQualityToAPI(quality: string): "Ultra" | "Extreme" | "Max" {
+  switch (quality.toLowerCase()) {
+    case "high":
+      return "Extreme";
+    case "max":
+      return "Max";
+    default:
+      return "Ultra";
+  }
+}
+
+/**
+ * Map UI aspect ratio to API aspect
+ */
+export function mapAspectToAPI(aspect: string): "Portrait" | "Wide" {
+  return aspect.toLowerCase() === "wide" ? "Wide" : "Portrait";
 }
