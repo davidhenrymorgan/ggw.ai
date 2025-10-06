@@ -22,3 +22,5 @@ Status: Working list of internal/external docs used by the project and Cursor.
 ## To Add (paste or link)
 - Cursor indexed docs list (export from Cursor Settings → Rules & Docs)
 - Any internal design docs, UI specs, or moderation policy details
+
+@firecrawl-mcp

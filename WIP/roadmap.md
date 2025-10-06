@@ -1,111 +1,73 @@
-# Roadmap (Draft for Review)
+Awesome—here’s a short, high-signal bullet outline that folds in your clarifications (Firecrawl premium, Leonardo UI reference, Sora inspiration, Clerk wrapping rules, and whether to use Vercel AI SDK v5). Skim this, tweak anything, and I’ll expand it into a full ROADMAP.md.
 
-Status: Draft. Do not publish. Intended to align on scope and policies before branching/implementation.
+⸻
 
-## Vision
+🎯 Product & Design North Star
+	•	UI/UX: Hybrid of Leonardo’s app shell (structure/flows) + Sora’s visual minimalism (dark canvas, glass cards, big rhythm).
+	•	Scope: Public-by-default gallery (images/videos), likes, saves → collections/folders; generation pages for image & video.
+	•	Ethics: Recreate structure & patterns; rewrite copy; no verbatim scraping of protected content.
 
-Build a premium, safe-by-default AI image platform. Landing/discovery remains PG-13 (no nudity). Access to NSFW requires login, manual filter disable, and 18+ attestation. All content is AI-generated, never real people. Deliver exceptional UI/UX, high-quality images, and rich tagging/organization, with a customer-first approach including fair refunds for unused tokens.
+🔎 Firecrawl (Premium) — “Study Only”
+	•	Use Map → Diff → Scrape (html-only, depth=2) on app.leonardo.ai to learn routes, layout regions, component blocks (no content reuse).
+	•	Export a SITE_STRUCTURE.md (routes + components) to guide build; keep screenshots/HTML in WIP only.
 
-## Principles (Confirmed)
+👤 Clerk Integration (critical constraints)
+	•	Follow Clerk’s Next.js App Router wrapping: ClerkProvider in app/layout.tsx, route guarding via middleware.ts.
+	•	When embedding shadcn/ui pages/blocks:
+	•	Logged-in: render authenticated views/components (SSR-safe).
+	•	Logged-out: show gated/marketing variants (avoid leaking private data).
+	•	Use Convex + Clerk JWT template for server checks on mutations/queries (no client-only auth checks).
 
-- Safety-first: PG-13 default; explicit content only after 18+ attest + manual NSFW opt-out.
-- Truth-in-labeling: Prominent site-wide disclaimer that all images are AI-generated, not real persons.
-- Quality bar: Enforce high image quality standards; require descriptive tagging and organization.
-- Customer-first: Full cash refunds for unused token purchases within 24 hours upon request.
-- Auditability: Log NSFW toggle, age attestations, moderation outcomes, and credit/refund events.
+🧱 Convex Data Model (core tables)
+	•	users (Clerk bridge; handle, avatar)
+	•	assets (image|video, visibility, status, r2Key, meta, likeCount, createdAt)
+	•	generations (userId, type, input, engine, status, assetId, creditsUsed, timestamps)
+	•	likes (userId+assetId unique)
+	•	collections, collectionItems (optional parentId for folders)
+	•	Indexes for feed & profile: by_visibility, by_createdAt, by_owner, by_user, by_asset.
 
-## Safety & NSFW Access Policy (Confirmed)
+🧰 Generation Providers (Promptchan first; pluggable)
+	•	Add a provider interface; start with Promptchan endpoints:
+	•	Image: POST /api/external/create (cost by quality/options).
+	•	Video: POST /api/external/video_v2/submit → GET …/status(_with_logs) → GET …/result.  ￼
+	•	Keep adapters for future engines (Flux/OpenAI/Sora when available); select via GEN_PROVIDER env.
 
-- Landing/discovery: Always PG-13. No nudity previews. Use tasteful blur/placeholders for flagged content.
-- Access control: NSFW requires login, explicit 18+ self-attestation, and manual disable of NSFW filter.
-- Persistence: Store `nsfw_filter_enabled = true` by default; record `age_verified_at` timestamp on attestation.
-- Enforcement: Middleware enforces PG-13 for anonymous users and any user with NSFW filter enabled.
-- Logging: Record toggle actions (time, user, coarse device fingerprint hash), moderation decisions, and appeals.
+🗂️ Storage (Cloudflare R2)
+	•	Bucket layout: assets/{userId}/{assetId}/[original|thumb|poster].(jpg|mp4).
+	•	Public CDN for public assets; signed URLs for private/unlisted.
+	•	Generate poster/thumbnail on finalize; store on assets.
 
-## Refunds Policy (Confirmed)
+💳 Credits & Billing
+	•	credits, creditTransactions tables; deduct on enqueue, refund on fail.
+	•	Clerk Billing → Convex webhook maps plan → monthly credit allotment; support one-time top-ups.
 
-- Scope: Refund applies to a specific token/gem purchase (grant), not the entire account balance.
-- Window: Eligible for a full cash refund if requested within 24 hours from purchase timestamp.
-- Eligibility: The specific purchase must be completely unused (zero consumption from that grant). Any usage voids auto-refund; case-by-case discretionary support credits remain possible.
-- Method: Refund to the original payment method via Clerk Billing/Stripe. Reflect state via webhooks.
-- Limits & Abuse: One-click refund for eligible purchases; rate-limit excessive refund attempts; idempotent processing.
-- SLA: Issue the refund within 24 hours of the user’s request; disclose bank processing delays.
-- UI/UX: Purchases list shows eligibility, a countdown timer, and a “Request refund” button with clear policy text.
-- Admin: One-click refunds with logged operator, reason, and idempotency keys; audit trail.
-- Data model: Ledger per purchase grant and per-consumption record; compute unused by grant; link transactions and refunds.
+🖼️ Frontend (Sora/Leonardo style)
+	•	Explore: masonry grid (CSS columns, break-inside-avoid), filters (All/Images/Videos), sort (New/Trending).
+	•	Asset Detail: modal/page with viewer, prompt/settings, like/save/share.
+	•	Generate: tabs for Image/Video (quality, aspect, seed, negative prompt, presets).
+	•	Profile: tabs (Gallery, Collections, Likes); owner tools to toggle visibility.
+	•	Polished A11y (AA contrast, focus rings, PRM), subtle motion.
 
-## Phase 0 — Foundations (Now → MVP readiness)
+🧩 Vercel AI SDK v5 — use or skip?
+	•	Use it if you want streaming UI, tool calls, server actions ergonomics (especially for chatty/agent features).
+	•	OK to skip for the core Promptchan workflow (it’s HTTP + polling). Consider SDK v5 later for assistants/UX (prompt helpers, captioners, etc.).
 
-- Safety & Age Gate
-  - Default NSFW filter on for all users; enforce for anonymous sessions.
-  - Settings flow to disable filter requires 18+ attestation + confirmation; store `age_verified_at` and log action.
-  - Middleware to enforce PG-13 across landing/discovery unless verified + opted out.
-- Legal & Disclaimers
-  - Footer/banner disclaimer: “All images are AI-generated; no real persons.”
-  - Draft ToS/Privacy/Content Policy; collect examples (e.g., promptchan ToS) for inspiration (not copy-paste).
-- Moderation Guardrails
-  - Prompt filtering in PG-13 mode; allow only after opt-out + 18+.
-  - Text moderation pre-check; image moderation post-check; quarantine and review queue in Convex.
-- Content Model & Tagging
-  - Schema: images (owner, nsfw_level, quality_score, ai_generated=true, hashes), tags, image_tags, collections.
-  - Require minimum tags per upload; suggest tags; dedupe via perceptual hash.
-- Credits & Refundability
-  - Implement credit ledger (grants, consumptions, balances) and transactions.
-  - Refund workflow per confirmed policy; user-facing eligibility + admin tooling; webhook sync.
-- UI/UX Polish
-  - Smooth toggles, confirmations, safe-mode badge/state; blurred/placeholder media in PG-13 contexts.
-- Observability
-  - Metrics: moderation escapes, false positives, opt-out rate, refunds requested, time-to-refund.
-  - Logs: NSFW toggles, attestations, moderation outcomes, credit/refund events.
+🛡️ Moderation & Safety (minimum)
+	•	assets.moderation.status gates public listing; simple reports table + admin queue.
+	•	Rate-limit generation endpoints; log provider errors; do not store secrets client-side.
 
-Exit criteria: PG-13 enforced on landing/discovery; NSFW requires login + attestation + manual disable; disclaimers visible; moderation pipeline active; tagging required; credits usable; refund flow operational for unused packs.
+🗓️ Build Order (phases)
+	1.	UI Shell + Explore (Sora/Leonardo look) → AssetCard, GalleryGrid, detail modal.
+	2.	Convex schema + Likes/Collections (optimistic updates + denorm likeCount).
+	3.	Generation Core (Promptchan adapter, enqueue/finish/fail, credits).  ￼
+	4.	R2 finalize (upload, poster/thumb, public URLs).
+	5.	Generate pages (image/video forms + progress).
+	6.	Profiles & Collections pages.
+	7.	Polish/branding + landing refresh.
 
-## Phase 1 — MVP (Closed Alpha)
+🧪 Acceptance checks (each phase)
+	•	Page renders SSR, passes auth guards, and no secret leakage.
+	•	Queries use withIndex; feeds paginate by cursor (createdAt + id).
+	•	Generation deducts/credits correctly, resumes on retry; asset appears in Explore on status="ready".
 
-- Safety tuning: Thresholds/heuristics; weekly safety reviews; escalation runbook.
-- Tagging UX: Bulk edit, auto-suggest, facet filters, tag quality checks.
-- Creator flow v1: Upload → auto tags → review → publish; inline content guidelines.
-- Credits: Purchase flow, usage receipts; admin issue/refund credits; simple wallet export.
-- Legal pages: Publish ToS/Privacy/Content Policy; link in footer and gates.
-- Infra: Staging/prod split; domain + TLS; hardened webhooks; dashboards for moderation and refunds.
-
-Exit criteria: 10–20 testers; <1% critical safety escapes; opt-out path clear and logged; refunds process trialed; positive UX feedback.
-
-## Phase 2 — Beta (Wider Invite)
-
-- Moderation: Sampling audits; reputation signals; improved quarantine review SLAs.
-- Discovery: Rich facets, collections, search by tags/attributes; early personalization (privacy-safe).
-- Credits: Promotions and pricing experiments; clearer unused-token refund policy text.
-- Legal: Policy versioning and change logs; DMCA-style intake (even with AI-only content) for trust.
-- Performance: CDN strategy; prefetch and streaming optimizations for images.
-
-## Phase 3 — GA
-
-- Transparency: Safety report cadence; internal audit exports.
-- Quality: Continuous evals of prompt filters/moderation; model routing optimization.
-- Compliance: Jurisdiction checks; age-gate variants; data retention and deletion SLAs.
-
-## Implementation Notes (Stack: Next.js + Convex + Clerk + Clerk Billing)
-
-- Clerk
-  - Store `nsfw_filter_enabled` (default true) and `age_verified_at` in user metadata.
-  - Use middleware to read claims and enforce safe mode.
-- Convex
-  - Tables: users, images, tags, image_tags, reviews, credits, transactions, moderation_events.
-  - Jobs: moderation scan, tag suggestion, dedupe, quarantine handling, credit refunds.
-- Next.js UI
-  - Landing/discover respect safe mode with tasteful blur; settings page for NSFW toggle + attestation.
-  - Creator upload with quality gates (min resolution/size) and mandatory tags.
-
-## Open Questions
-
-- Age verification level: self-attestation now vs. third-party ID later?
-- NSFW scope: precise definitions and edge cases (sheer, drawn/virtual, lingerie, etc.).
-- Refunds: Allow refund of newer unused packs even if older packs were used?
-- Token pricing: Packages, deductions (generate vs. view/download), and grace rules.
-- Image standards: Required resolution/aspect, compression targets, acceptable generators/models.
-- Regional constraints: Any geofencing or jurisdiction-specific policy requirements?
-
----
-
-Review this draft and share edits. On approval, we will open a new branch and begin implementing Phase 0 tasks.
+⸻
