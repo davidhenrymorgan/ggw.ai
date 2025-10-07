@@ -1,17 +1,29 @@
 # Documentation Index
 
 Comprehensive index of internal and external documentation for girlsgonewild.ai
-Last Updated: 2025-10-06
+Last Updated: 2025-10-07
+
+---
+
+## 🚨 START HERE (New Session Checklist)
+
+1. **Read [WIP/status.md](status.md)** - CRITICAL: UI currently broken despite successful build
+2. **Read [WIP/roadmap.md](roadmap.md)** - Priority #1: Fix broken UI before any other work
+3. **Read [WIP/SORA_REDESIGN.md](SORA_REDESIGN.md)** - Full context on what broke and why
+4. **Compare deployments:**
+   - Working (before redesign): https://ggw-qczy442v3-davidhenrymorgans-projects.vercel.app
+   - Broken (after redesign): https://ggw-ndlmgr3gb-davidhenrymorgans-projects.vercel.app
 
 ---
 
 ## 📁 Internal Documentation (Repository)
 
-### Project Core
+### Project Core (Read First)
+- **[WIP/status.md](status.md)** - ⚠️ Current deployment status, known issues, env vars
+- **[WIP/roadmap.md](roadmap.md)** - 🚨 Feature roadmap with concrete next steps (UI fix is #1)
+- **[WIP/SORA_REDESIGN.md](SORA_REDESIGN.md)** - 🔥 Complete Sora redesign documentation (what broke)
 - **[README.md](../README.md)** - Project overview and setup instructions
 - **[CLAUDE.md](../CLAUDE.md)** - Project-specific guidance for Claude Code
-- **[WIP/status.md](status.md)** - Current deployment status, known issues, env vars
-- **[WIP/roadmap.md](roadmap.md)** - Feature roadmap with concrete next steps
 
 ### Setup & Configuration
 - **[WIP/MCP.md](MCP.md)** - MCP server setup (Cloudflare, Firecrawl, Context7)
@@ -25,7 +37,7 @@ Last Updated: 2025-10-06
 
 ### Architecture & Schema
 - **[convex/schema.ts](../convex/schema.ts)** - Complete database schema
-- **[WIP/UIUX-Restructure-Plan.md](UIUX-Restructure-Plan.md)** - UI/UX restructuring notes
+- **[WIP/UIUX-Restructure-Plan.md](UIUX-Restructure-Plan.md)** - Original UI/UX restructuring notes
 
 ---
 

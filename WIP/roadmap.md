@@ -19,18 +19,72 @@ Last Updated: 2025-10-06
 
 ---
 
-## 🚦 Current Status: Authentication Fix Required
+## 🚨 Current Status: CRITICAL UI ISSUE - BUILD SUCCESS BUT VISUALLY BROKEN
 
-**Immediate Blocker:**
+**HIGHEST PRIORITY BLOCKER:**
+- Build succeeds but deployed UI is structurally broken
+- Latest deployment: https://ggw-ndlmgr3gb-davidhenrymorgans-projects.vercel.app
+- Suspected: Missing Tailwind base layers or shadcn/ui CSS
+- Last working version: https://ggw-qczy442v3-davidhenrymorgans-projects.vercel.app (before Sora redesign fixes)
+- **MUST FIX BEFORE ANY OTHER WORK**
+
+**Secondary Blocker:**
 - Missing `NEXT_PUBLIC_CLERK_FRONTEND_API_URL` in Convex environment variables
 - User upgrading Convex to paid tier ($25/month)
-- Once fixed, can test end-to-end generation flow
+- Once UI is fixed, can test end-to-end generation flow
 
 ---
 
 ## 📋 Next Up (This Week)
 
-### 1. Fix Authentication & Test Generation Flow
+### 1. 🚨 FIX BROKEN UI (CRITICAL - DO FIRST)
+**Time Estimate:** 2-4 hours
+**Files to Investigate:**
+- [app/globals.css](app/globals.css) - Compare with working version
+- [tailwind.config.ts](tailwind.config.ts) - Verify Tailwind CSS v4 compatibility
+- [components/ui/](components/ui/) - Check if shadcn components need base CSS
+
+**Exact Investigation Steps:**
+1. **Compare globals.css:**
+   ```bash
+   # Get working version from last successful deployment
+   git diff ggw-qczy442v3..874a9f6 -- app/globals.css
+   ```
+2. **Check Tailwind CSS v4 @import statements:**
+   - Verify `@import "tailwindcss"` is correct
+   - Check if `@layer` directives work in v4
+   - Verify custom utilities are properly defined
+
+3. **Verify shadcn/ui base styles:**
+   - Check if components.json is correctly configured
+   - Verify CSS variables are defined in :root
+   - Check if @apply directives work in Tailwind CSS v4
+
+4. **Test custom utilities:**
+   - Review .bg-gradient-* classes
+   - Check if inline `backdrop-blur` utilities work
+   - Verify oklch() color functions render
+
+5. **Compare with working deployment:**
+   - Load both URLs side-by-side
+   - Use browser DevTools to inspect CSS loading
+   - Check Network tab for missing CSS files
+   - Compare computed styles between working and broken
+
+**Suspected Root Causes (prioritized):**
+1. **Tailwind CSS v4 @layer syntax incompatibility** - Custom utilities may not be properly defined
+2. **Missing base/components/utilities imports** - Removed during cleanup
+3. **@apply directives not working** - Tailwind CSS v4 deprecated @apply in some contexts
+4. **CSS variables not defined** - shadcn relies on CSS variables in :root
+5. **Plugin removed (tailwindcss-animate)** - May be needed despite error
+
+**Exact Fix Options:**
+- **Option A:** Revert globals.css to working version, then carefully re-apply Sora styles
+- **Option B:** Add missing Tailwind base imports or configuration
+- **Option C:** Fix Tailwind CSS v4 compatibility issues with custom utilities
+- **Option D:** Ensure shadcn/ui CSS variables are properly defined
+
+### 2. Fix Authentication & Test Generation Flow
 **Time Estimate:** 1-2 hours
 **Files:** Convex environment variables
 **Dependencies:** Convex upgrade complete
