@@ -24,7 +24,7 @@ export default function ExplorePage() {
             {/* Filters with glass morphism */}
             <div className="flex items-center gap-3">
               {/* Type Filter */}
-              <div className="glass-hover flex gap-1.5 rounded-2xl p-1.5">
+              <div className="bg-card/50 backdrop-blur-xl border border-border/50 hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300 flex gap-1.5 rounded-2xl p-1.5">
                 <button
                   onClick={() => setFilter("all")}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
@@ -58,7 +58,7 @@ export default function ExplorePage() {
               </div>
 
               {/* Sort */}
-              <div className="glass-hover flex gap-1.5 rounded-2xl p-1.5">
+              <div className="bg-card/50 backdrop-blur-xl border border-border/50 hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300 flex gap-1.5 rounded-2xl p-1.5">
                 <button
                   onClick={() => setSort("new")}
                   className={`rounded-xl px-4 py-2 text-sm font-medium transition-all duration-200 ${
