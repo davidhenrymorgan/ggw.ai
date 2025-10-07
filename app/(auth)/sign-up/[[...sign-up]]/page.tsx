@@ -42,7 +42,7 @@ export default function SignUpPage() {
             appearance={{
               elements: {
                 rootBox: "mx-auto",
-                card: "bg-card/50 backdrop-blur-xl border border-border/50 hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300 rounded-3xl shadow-glow px-8 py-10",
+                card: "glass-hover rounded-3xl shadow-glow px-8 py-10",
                 headerTitle: "text-white text-2xl font-semibold",
                 headerSubtitle: "text-white/70",
                 socialButtonsBlockButton:

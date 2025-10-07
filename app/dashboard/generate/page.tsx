@@ -98,7 +98,7 @@ export default function GeneratePage() {
 
       {/* Mode Tabs with glow effects */}
       <Tabs value={mode} onValueChange={(v) => setMode(v as GenerationMode)} className="w-full">
-        <TabsList className="bg-card/50 backdrop-blur-xl border border-border/50 hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300 grid w-full grid-cols-4 gap-2 p-2 h-auto">
+        <TabsList className="glass-hover grid w-full grid-cols-4 gap-2 p-2 h-auto">
           <TabsTrigger
             value="text-to-image"
             className="gap-2 rounded-xl py-3 data-[state=active]:bg-gradient-card-purple data-[state=active]:text-white data-[state=active]:shadow-glow-purple transition-all"
@@ -134,7 +134,7 @@ export default function GeneratePage() {
         </TabsList>
 
         <TabsContent value={mode} className="mt-8">
-          <div className="bg-card/50 backdrop-blur-xl border border-border/50 hover:bg-card/80 hover:border-border hover:shadow-glow transition-all duration-300 space-y-8 rounded-3xl p-8 shadow-card">
+          <div className="glass-hover space-y-8 rounded-3xl p-8 shadow-card">
             {/* Image Upload (for image-to-image and image-edit modes) */}
             {(mode === "image-to-image" || mode === "image-edit") && (
               <div className="space-y-2">
